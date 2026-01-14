@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lothric_postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: temp
+    ports:
+      - "5432:5432"
+    volumes:
+      - lothric_postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - lothric_psql_net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: lothric_pgadmin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    depends_on:
+      - postgres
+    volumes:
+      - lothric_pgadmin_data:/var/lib/pgadmin
+    networks:
+      - lothric_psql_net
+
+volumes:
+  lothric_postgres_data:
+  lothric_pgadmin_data:
+
+networks:
+  lothric_psql_net:
