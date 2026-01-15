@@ -19,5 +19,8 @@ public interface UserRepository {
   User update(User user);
 
   /** Delete user by Id. */
-  User deleteById(User user);
+  User deleteById(Long id);
+
+  /** Total user. */
+  Long count();
 }

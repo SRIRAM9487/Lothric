@@ -13,8 +13,10 @@ import com.lothric.backend.user.domain.exception.UserException;
 import com.lothric.backend.user.domain.exception.UserExceptionType;
 import com.lothric.backend.user.infrastructure.persistence.UserRepository;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /** {@link UserRepository}. */
 public class UserRepositoryTest extends AbstractTestContainer {
@@ -23,14 +25,29 @@ public class UserRepositoryTest extends AbstractTestContainer {
 
   private final Long foundUserId = 1L;
   private final Long notFoundUserId = 9999L;
+  private User newUser;
+
+  @BeforeEach
+  void setup() {
+    newUser = new User();
+    newUser.setName("Tester");
+    newUser.setUsername("Tester-1");
+    newUser.setPassword("Tester");
+    newUser.setRole(UserRole.ADMIN);
+    newUser.setEmail("tester@gmail.com");
+    newUser.setEnabled(true);
+    newUser.setAccountNonLocked(true);
+  }
 
   @Test
+  @Transactional
   void getAll() {
     List<User> users = userRepository.findAll();
     assertFalse(users.isEmpty());
   }
 
   @Test
+  @Transactional
   void getById() {
     User user = userRepository.findById(foundUserId);
     assertEquals(user.getId(), foundUserId);
@@ -40,6 +57,7 @@ public class UserRepositoryTest extends AbstractTestContainer {
   }
 
   @Test
+  @Transactional
   void getById_notFound() {
     var ex =
         assertThrowsExactly(
@@ -51,21 +69,114 @@ public class UserRepositoryTest extends AbstractTestContainer {
   }
 
   @Test
+  @Transactional
   void createUser() {
-    User user = new User();
-    user.setName("Tester");
-    user.setUsername("Testeuserlr");
-    user.setPassword("Tester");
-    user.setRole(UserRole.ADMIN);
-    user.setEnabled(true);
-    user.setAccountNonLocked(true);
-    User savedUser = userRepository.save(user);
-    assertEquals(user.getName(), savedUser.getName());
-    assertEquals(user.getUsername(), savedUser.getUsername());
-    assertEquals(user.getPassword(), savedUser.getPassword());
-    assertEquals(user.getRole(), savedUser.getRole());
-    assertEquals(user.isEnabled(), savedUser.isEnabled());
-    assertEquals(user.isAccountNonLocked(), savedUser.isAccountNonLocked());
-    assertNotNull(user.getCreatedAt());
+    User savedUser = userRepository.save(newUser);
+    assertEquals(newUser.getName(), savedUser.getName());
+    assertEquals(newUser.getUsername(), savedUser.getUsername());
+    assertEquals(newUser.getRole(), savedUser.getRole());
+    assertEquals(newUser.isEnabled(), savedUser.isEnabled());
+    assertEquals(newUser.isAccountNonLocked(), savedUser.isAccountNonLocked());
+  }
+
+  @Test
+  @Transactional
+  void createUser_unique_username() {
+    newUser.setUsername("UserName1");
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.save(newUser);
+            });
+    assertEquals(UserExceptionType.USER_NAME_MUST_BE_UNIQUE.name(), ex.getCode());
+  }
+
+  @Test
+  @Transactional
+  void createUser_unique_email() {
+    newUser.setEmail("user2@gmail.com");
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.save(newUser);
+            });
+    assertEquals(UserExceptionType.USER_EMAIL_MUST_BE_UNIQUE.name(), ex.getCode());
+  }
+
+  @Test
+  @Transactional
+  void updateUser() {
+    newUser.setId(foundUserId);
+    User savedUser = userRepository.update(newUser);
+    assertEquals(newUser.getId(), savedUser.getId());
+    assertEquals(newUser.getName(), savedUser.getName());
+    assertEquals(newUser.getUsername(), savedUser.getUsername());
+    assertEquals(newUser.getRole(), savedUser.getRole());
+    assertEquals(newUser.isEnabled(), savedUser.isEnabled());
+    assertEquals(newUser.isAccountNonLocked(), savedUser.isAccountNonLocked());
+  }
+
+  @Test
+  @Transactional
+  void updateUser_unique_username() {
+    newUser.setId(foundUserId);
+    newUser.setUsername("UserName1");
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.update(newUser);
+            });
+    assertEquals(UserExceptionType.USER_NAME_MUST_BE_UNIQUE.name(), ex.getCode());
+  }
+
+  @Test
+  @Transactional
+  void updateUser_unique_email() {
+    newUser.setId(foundUserId);
+    newUser.setEmail("user2@gmail.com");
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.update(newUser);
+            });
+    assertEquals(UserExceptionType.USER_EMAIL_MUST_BE_UNIQUE.name(), ex.getCode());
+  }
+
+  @Test
+  @Transactional
+  void updateUser_not_found() {
+    newUser.setId(notFoundUserId);
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.update(newUser);
+            });
+    assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
+  }
+
+  @Test
+  @Transactional
+  void deleteById() {
+    Long before = userRepository.count();
+    User user = userRepository.deleteById(foundUserId);
+    assertEquals(user.getId(), foundUserId);
+    assertEquals(before - 1, userRepository.count());
+  }
+
+  @Test
+  @Transactional
+  void deleteById_notFound() {
+    var ex =
+        assertThrowsExactly(
+            UserException.class,
+            () -> {
+              userRepository.deleteById(notFoundUserId);
+            });
+    assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
   }
 }

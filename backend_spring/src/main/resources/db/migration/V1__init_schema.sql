@@ -2,6 +2,7 @@ CREATE TABLE users (
   id SERIAL,
   name VARCHAR(255),
   username VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
   role VARCHAR(50) NOT NULL,
   is_account_non_locked BOOLEAN DEFAULT TRUE,
   is_enabled BOOLEAN DEFAULT TRUE,
