@@ -21,12 +21,15 @@ public class SchemaGenerator {
         String role = i % 2 == 0 ? "ADMIN" : "USER";
         String name = "User" + userCount;
         String username = "UserName" + ++userCount;
+        String email = "user" + ++userCount + "@gmail.com";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO users(name, username, role) VALUES('")
+        sb.append("INSERT INTO users(name, username, email, role) VALUES('")
             .append(name)
             .append("','")
             .append(username)
+            .append("','")
+            .append(email)
             .append("','")
             .append(role)
             .append("');")
@@ -43,14 +46,17 @@ public class SchemaGenerator {
         String username = "UserName" + ++userCount;
         boolean isAccountLocked = i % 2 == 0 ? true : false;
         boolean isEnabled = i % 2 == 0 ? true : false;
+        String email = "user" + ++userCount + "@gmail.com";
 
         StringBuilder sb = new StringBuilder();
         sb.append(
-            "INSERT INTO users(name, username, role, is_account_non_locked, is_enabled)"
-                + " VALUES('")
+                "INSERT INTO users(name, username, email, role, is_account_non_locked, is_enabled)"
+                    + " VALUES('")
             .append(name)
             .append("','")
             .append(username)
+            .append("','")
+            .append(email)
             .append("','")
             .append(role)
             .append("',")
