@@ -9,6 +9,9 @@ public interface UserRepository {
   /** Retrive all users. */
   List<User> findAll();
 
+  /** Retrive all users. */
+  List<User> findAllByIds(List<Long> ids);
+
   /** Retrive user by Id. */
   User findById(Long id);
 

@@ -181,4 +181,12 @@ public class UserRepositoryTest extends AbstractTestContainer {
             });
     assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
   }
+
+  @Test
+  @Transactional
+  void getAllByIds() {
+    var ids = List.of(1L, 23L, 4L);
+    List<User> users = userRepository.findAllByIds(ids);
+    assertEquals(users.size(), ids.size());
+  }
 }

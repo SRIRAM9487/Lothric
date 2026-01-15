@@ -4,6 +4,7 @@ import com.lothric.backend.user.domain.entity.User;
 import com.lothric.backend.user.domain.entity.UserRole;
 import com.lothric.backend.user.domain.exception.UserException;
 import com.lothric.backend.user.infrastructure.persistence.UserRepository;
+import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,24 @@ public class UserRepositoryImpl implements UserRepository {
         "SELECT id, name, username, email, role, is_account_non_locked, is_enabled, created_at,"
             + " updated_at FROM users WHERE deleted_at IS NULL;";
     return jdbcTemplate.query(sql, userRowMapper);
+  }
+
+  @Override
+  public List<User> findAllByIds(List<Long> ids) {
+    String sql =
+        "SELECT id, name, username, email, role, is_account_non_locked, is_enabled, created_at,"
+            + " updated_at FROM users WHERE deleted_at IS NULL AND id = ANY(?);";
+
+    var users =
+        jdbcTemplate.query(
+            con -> {
+              PreparedStatement ps = con.prepareStatement(sql);
+              ps.setArray(1, con.createArrayOf("bigint", ids.toArray()));
+              return ps;
+            },
+            userRowMapper);
+
+    return users;
   }
 
   @Override
