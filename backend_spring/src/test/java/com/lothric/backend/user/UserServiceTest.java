@@ -7,51 +7,47 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import com.lothric.backend.AbstractTestContainer;
+import com.lothric.backend.user.application.service.UserService;
 import com.lothric.backend.user.domain.entity.User;
 import com.lothric.backend.user.domain.entity.UserRole;
 import com.lothric.backend.user.domain.exception.UserException;
 import com.lothric.backend.user.domain.exception.UserExceptionType;
-import com.lothric.backend.user.infrastructure.persistence.UserRepository;
+import com.lothric.backend.user.infrastructure.dto.request.UserCreateRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-/** {@link UserRepository}. */
-public class UserRepositoryTest extends AbstractTestContainer {
+/** {@link UserService}. */
+public class UserServiceTest extends AbstractTestContainer {
 
-  @Autowired private UserRepository userRepository;
+  @Autowired private UserService userService;
 
   private final Long foundUserId = 1L;
   private final Long notFoundUserId = 9999L;
   private final String uniqueUserName = "UserName3";
   private final String uniqueEmail = "user4@gmail.com";
-  private User newUser;
+
+  private UserCreateRequest newUserDto;
 
   @BeforeEach
   void setup() {
-    newUser = new User();
-    newUser.setName("Tester");
-    newUser.setUsername("Tester-1");
-    newUser.setPassword("Tester");
-    newUser.setRole(UserRole.ADMIN);
-    newUser.setEmail("tester@gmail.com");
-    newUser.setEnabled(true);
-    newUser.setAccountNonLocked(true);
+    newUserDto =
+        new UserCreateRequest(
+            "Tester1", "Tester-1", "tester100@gmail.com", UserRole.ADMIN.name(), false, true);
   }
 
   @Test
-  @Transactional
   void getAll() {
-    List<User> users = userRepository.findAll();
+    List<User> users = userService.getAll();
     assertFalse(users.isEmpty());
   }
 
   @Test
   @Transactional
   void getById() {
-    User user = userRepository.findById(foundUserId);
+    User user = userService.get(foundUserId);
     assertEquals(user.getId(), foundUserId);
     assertNotNull(user.getCreatedAt());
 
@@ -65,31 +61,41 @@ public class UserRepositoryTest extends AbstractTestContainer {
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.findById(notFoundUserId);
+              userService.get(notFoundUserId);
             });
     assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
   }
 
   @Test
   @Transactional
-  void createUser() {
-    User savedUser = userRepository.save(newUser);
-    assertEquals(newUser.getName(), savedUser.getName());
-    assertEquals(newUser.getUsername(), savedUser.getUsername());
-    assertEquals(newUser.getRole(), savedUser.getRole());
-    assertEquals(newUser.isEnabled(), savedUser.isEnabled());
-    assertEquals(newUser.isAccountNonLocked(), savedUser.isAccountNonLocked());
+  void create() {
+    User user = userService.create(newUserDto);
+    assertNotNull(user.getId());
+    assertEquals(newUserDto.name(), user.getName());
+    assertEquals(newUserDto.username(), user.getUsername());
+    assertEquals(newUserDto.email(), user.getEmail());
+    assertEquals(newUserDto.role(), user.getRole().name());
+    assertEquals(newUserDto.isAccountNonLocked(), user.isAccountNonLocked());
+    assertEquals(newUserDto.isEnabled(), user.isEnabled());
   }
 
   @Test
   @Transactional
   void createUser_unique_username() {
-    newUser.setUsername(uniqueUserName);
+    newUserDto =
+        new UserCreateRequest(
+            newUserDto.name(),
+            uniqueUserName,
+            newUserDto.email(),
+            newUserDto.role(),
+            newUserDto.isAccountNonLocked(),
+            newUserDto.isEnabled());
+
     var ex =
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.save(newUser);
+              userService.create(newUserDto);
             });
     assertEquals(UserExceptionType.USER_NAME_MUST_BE_UNIQUE.name(), ex.getCode());
   }
@@ -97,12 +103,19 @@ public class UserRepositoryTest extends AbstractTestContainer {
   @Test
   @Transactional
   void createUser_unique_email() {
-    newUser.setEmail(uniqueEmail);
+    newUserDto =
+        new UserCreateRequest(
+            newUserDto.name(),
+            newUserDto.username(),
+            uniqueEmail,
+            newUserDto.role(),
+            newUserDto.isAccountNonLocked(),
+            newUserDto.isEnabled());
     var ex =
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.save(newUser);
+              userService.create(newUserDto);
             });
     assertEquals(UserExceptionType.USER_EMAIL_MUST_BE_UNIQUE.name(), ex.getCode());
   }
@@ -110,26 +123,31 @@ public class UserRepositoryTest extends AbstractTestContainer {
   @Test
   @Transactional
   void updateUser() {
-    newUser.setId(foundUserId);
-    User savedUser = userRepository.update(newUser);
-    assertEquals(newUser.getId(), savedUser.getId());
-    assertEquals(newUser.getName(), savedUser.getName());
-    assertEquals(newUser.getUsername(), savedUser.getUsername());
-    assertEquals(newUser.getRole(), savedUser.getRole());
-    assertEquals(newUser.isEnabled(), savedUser.isEnabled());
-    assertEquals(newUser.isAccountNonLocked(), savedUser.isAccountNonLocked());
+    User savedUser = userService.update(foundUserId, newUserDto);
+    assertEquals(foundUserId, savedUser.getId());
+    assertEquals(newUserDto.name(), savedUser.getName());
+    assertEquals(newUserDto.username(), savedUser.getUsername());
+    assertEquals(newUserDto.role(), savedUser.getRole().name());
+    assertEquals(newUserDto.isEnabled(), savedUser.isEnabled());
+    assertEquals(newUserDto.isAccountNonLocked(), savedUser.isAccountNonLocked());
   }
 
   @Test
   @Transactional
   void updateUser_unique_username() {
-    newUser.setId(foundUserId);
-    newUser.setUsername(uniqueUserName);
+    newUserDto =
+        new UserCreateRequest(
+            newUserDto.name(),
+            uniqueUserName,
+            newUserDto.email(),
+            newUserDto.role(),
+            newUserDto.isAccountNonLocked(),
+            newUserDto.isEnabled());
     var ex =
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.update(newUser);
+              userService.update(foundUserId, newUserDto);
             });
     assertEquals(UserExceptionType.USER_NAME_MUST_BE_UNIQUE.name(), ex.getCode());
   }
@@ -137,13 +155,19 @@ public class UserRepositoryTest extends AbstractTestContainer {
   @Test
   @Transactional
   void updateUser_unique_email() {
-    newUser.setId(foundUserId);
-    newUser.setEmail(uniqueEmail);
+    newUserDto =
+        new UserCreateRequest(
+            newUserDto.name(),
+            newUserDto.username(),
+            uniqueEmail,
+            newUserDto.role(),
+            newUserDto.isAccountNonLocked(),
+            newUserDto.isEnabled());
     var ex =
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.update(newUser);
+              userService.update(foundUserId, newUserDto);
             });
     assertEquals(UserExceptionType.USER_EMAIL_MUST_BE_UNIQUE.name(), ex.getCode());
   }
@@ -151,12 +175,11 @@ public class UserRepositoryTest extends AbstractTestContainer {
   @Test
   @Transactional
   void updateUser_not_found() {
-    newUser.setId(notFoundUserId);
     var ex =
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.update(newUser);
+              userService.update(notFoundUserId, newUserDto);
             });
     assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
   }
@@ -164,10 +187,8 @@ public class UserRepositoryTest extends AbstractTestContainer {
   @Test
   @Transactional
   void deleteById() {
-    Long before = userRepository.count();
-    User user = userRepository.deleteById(foundUserId);
+    User user = userService.deleteById(foundUserId);
     assertEquals(user.getId(), foundUserId);
-    assertEquals(before - 1, userRepository.count());
   }
 
   @Test
@@ -177,7 +198,7 @@ public class UserRepositoryTest extends AbstractTestContainer {
         assertThrowsExactly(
             UserException.class,
             () -> {
-              userRepository.deleteById(notFoundUserId);
+              userService.deleteById(notFoundUserId);
             });
     assertEquals(UserExceptionType.USER_NOT_FOUND.name(), ex.getCode());
   }

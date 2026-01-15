@@ -4,4 +4,9 @@ import com.lothric.backend.user.domain.entity.User;
 
 /** {@link User} User create request dto. */
 public record UserCreateRequest(
-    String name, String username, String role, boolean isAccountNonLocked, boolean isEnabled) {}
+    String name,
+    String username,
+    String email,
+    String role,
+    boolean isAccountNonLocked,
+    boolean isEnabled) {}

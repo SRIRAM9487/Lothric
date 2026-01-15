@@ -10,6 +10,11 @@ import com.lothric.backend.user.domain.entity.User;
  */
 public class UserException extends BaseException {
 
+  /**
+   * Default constructor.
+   *
+   * @param type UserExcpetion Type
+   */
   public UserException(UserExceptionType type) {
     super(type);
   }
