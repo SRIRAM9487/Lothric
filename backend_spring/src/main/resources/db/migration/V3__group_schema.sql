@@ -1,0 +1,10 @@
+INSERT INTO groups(name, description, creator) VALUES ('Group 1','This is test group 1',2);
+INSERT INTO groups(name, description, creator) VALUES ('Group 2','This is test group 2',3);
+INSERT INTO groups(name, description, creator) VALUES ('Group 3','This is test group 3',4);
+INSERT INTO groups(name, description, creator) VALUES ('Group 4','This is test group 4',5);
+INSERT INTO groups(name, description, creator) VALUES ('Group 5','This is test group 5',6);
+INSERT INTO groups(name, description, creator) VALUES ('Group 6','This is test group 6',7);
+INSERT INTO groups(name, description, creator) VALUES ('Group 7','This is test group 7',8);
+INSERT INTO groups(name, description, creator) VALUES ('Group 8','This is test group 8',9);
+INSERT INTO groups(name, description, creator) VALUES ('Group 9','This is test group 9',10);
+INSERT INTO groups(name, description, creator) VALUES ('Group 10','This is test group 10',11);

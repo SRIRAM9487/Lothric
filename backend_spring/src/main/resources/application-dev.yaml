@@ -6,4 +6,4 @@ spring:
 
 logging:
   level:
-    org.flywaydb: TRACE
+    # org.flywaydb: TRACE
