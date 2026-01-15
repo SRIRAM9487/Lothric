@@ -3,3 +3,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/lothric_spring
     username: root
     password: 1234
+
+logging:
+  level:
+    org.flywaydb: TRACE
