@@ -1,0 +1,8 @@
+{
+  "name": "Tester1",
+  "username": "Tester-1",
+  "email": "tester@gmail.com",
+  "role": "ADMIN",
+  "isAccountNonLocked": true,
+  "isEnabled": false
+}
